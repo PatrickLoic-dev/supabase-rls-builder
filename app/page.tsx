@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -45,16 +45,22 @@ export default function Home() {
     setTimeout(() => setToasts((p) => p.filter((t) => t.id !== id)), 3500);
   };
 
-  const supHeaders = useCallback(() => ({
-    "x-supabase-url": creds.supabaseUrl,
-    "x-supabase-key": creds.supabaseKey,
-  }), [creds.supabaseUrl, creds.supabaseKey]);
+  // Ref so loadPolicies always reads the latest creds without stale closure
+  const credsRef = useRef(creds);
+  useEffect(() => { credsRef.current = creds; }, [creds]);
 
   const loadPolicies = useCallback(async (table: string) => {
+    const { supabaseUrl, supabaseKey } = credsRef.current;
+    if (!supabaseUrl || !supabaseKey) {
+      toast(false, "Please fill in Supabase URL and Service Role Key first");
+      return;
+    }
     setPoliciesLoading(true);
     try {
       const q = table ? `?table=${encodeURIComponent(table)}` : "";
-      const res = await fetch(`/api/policies${q}`, { headers: supHeaders() });
+      const res = await fetch(`/api/policies${q}`, {
+        headers: { "x-supabase-url": supabaseUrl, "x-supabase-key": supabaseKey },
+      });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setPolicies(data.policies ?? []);
@@ -64,7 +70,8 @@ export default function Home() {
     } finally {
       setPoliciesLoading(false);
     }
-  }, [supHeaders]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleConnect = async () => {
     setConnecting(true);
@@ -94,7 +101,11 @@ export default function Home() {
     try {
       const res = await fetch("/api/policies", {
         method: "POST",
-        headers: { ...supHeaders(), "Content-Type": "application/json" },
+        headers: {
+          "x-supabase-url": credsRef.current.supabaseUrl,
+          "x-supabase-key": credsRef.current.supabaseKey,
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ sqls: generated.map((p) => p.sql), enableRLS, table: tableName }),
       });
       const data = await res.json();
