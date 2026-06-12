@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 
+interface LogoMarkProps { size?: number }
 interface LogoProps {
   size?: number;
   className?: string;
@@ -7,53 +8,51 @@ interface LogoProps {
   tagline?: string;
 }
 
-export function LogoMark({ size = 36 }: { size?: number }) {
+export function LogoMark({ size = 34 }: LogoMarkProps) {
   return (
     <svg
       width={size}
       height={size}
-      viewBox="0 0 36 36"
+      viewBox="0 0 34 34"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-label="PolicyCraft logo"
     >
-      {/* Shield body */}
+      {/* Shield fill */}
       <path
-        d="M18 3L5 8.5V18C5 25.18 10.64 31.88 18 33.5C25.36 31.88 31 25.18 31 18V8.5L18 3Z"
-        fill="var(--brand)"
-        opacity="0.15"
+        d="M17 2.5L4.5 7.5V17C4.5 23.9 9.8 30.2 17 31.8C24.2 30.2 29.5 23.9 29.5 17V7.5L17 2.5Z"
+        className="fill-primary/15"
       />
+      {/* Shield stroke */}
       <path
-        d="M18 3L5 8.5V18C5 25.18 10.64 31.88 18 33.5C25.36 31.88 31 25.18 31 18V8.5L18 3Z"
-        stroke="var(--brand)"
-        strokeWidth="1.75"
+        d="M17 2.5L4.5 7.5V17C4.5 23.9 9.8 30.2 17 31.8C24.2 30.2 29.5 23.9 29.5 17V7.5L17 2.5Z"
+        className="stroke-primary"
+        strokeWidth="1.6"
         strokeLinejoin="round"
       />
-      {/* Database cylinder top */}
-      <ellipse cx="18" cy="14" rx="5.5" ry="2" fill="var(--brand)" opacity="0.9" />
-      {/* Database cylinder body */}
+      {/* DB cylinder top ellipse */}
+      <ellipse cx="17" cy="13" rx="5" ry="1.8" className="fill-primary" />
+      {/* DB cylinder body */}
       <path
-        d="M12.5 14V20.5C12.5 21.6 14.97 22.5 18 22.5C21.03 22.5 23.5 21.6 23.5 20.5V14"
-        stroke="var(--brand)"
-        strokeWidth="1.5"
-        fill="var(--brand)"
-        fillOpacity="0.12"
+        d="M12 13V19C12 20 14.2 20.8 17 20.8C19.8 20.8 22 20 22 19V13"
+        className="fill-primary/15 stroke-primary"
+        strokeWidth="1.4"
       />
-      {/* Middle line of cylinder */}
+      {/* DB mid line */}
       <path
-        d="M12.5 17.25C12.5 18.35 14.97 19.25 18 19.25C21.03 19.25 23.5 18.35 23.5 17.25"
-        stroke="var(--brand)"
-        strokeWidth="1.2"
+        d="M12 16C12 17 14.2 17.8 17 17.8C19.8 17.8 22 17 22 16"
+        className="stroke-primary"
+        strokeWidth="1.1"
         strokeLinecap="round"
-        opacity="0.6"
+        opacity="0.55"
       />
     </svg>
   );
 }
 
-export function Logo({ size = 36, className, showWordmark = true, tagline }: LogoProps) {
+export function Logo({ size = 34, className, showWordmark = true, tagline }: LogoProps) {
   return (
-    <div className={cn("flex items-center gap-3", className)}>
+    <div className={cn("flex items-center gap-2.5", className)}>
       <LogoMark size={size} />
       {showWordmark && (
         <div className="flex flex-col leading-none">
@@ -61,7 +60,9 @@ export function Logo({ size = 36, className, showWordmark = true, tagline }: Log
             PolicyCraft
           </span>
           {tagline && (
-            <span className="text-[11px] text-muted-foreground mt-0.5">{tagline}</span>
+            <span className="text-[10.5px] text-muted-foreground mt-0.5 leading-snug max-w-[140px]">
+              {tagline}
+            </span>
           )}
         </div>
       )}

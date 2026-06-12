@@ -154,7 +154,7 @@ export default function Home() {
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
 
         {/* Topbar */}
-        <header className="flex-shrink-0 flex items-center gap-3 px-4 h-14 border-b border-border bg-card/50 backdrop-blur">
+        <header className="flex-shrink-0 flex items-center gap-3 px-4 h-14 border-b border-border bg-card backdrop-blur-sm z-10">
           <Button
             variant="ghost"
             size="icon"
@@ -177,7 +177,7 @@ export default function Home() {
 
           <Separator orientation="vertical" className="h-5" />
 
-          <span className="text-sm font-medium text-muted-foreground">{t.workspace}</span>
+          <span className="text-sm font-medium text-foreground/60">{t.workspace}</span>
 
           <div className="ml-auto flex items-center gap-2">
             <span className="text-xs text-muted-foreground hidden sm:block">{t.poweredBy}</span>
@@ -187,8 +187,8 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Scrollable workspace */}
-        <main className="flex-1 overflow-y-auto">
+        {/* Scrollable workspace with grid background */}
+        <main className="flex-1 overflow-y-auto grid-bg relative">
           <div className="max-w-3xl mx-auto px-6 py-14 space-y-12">
 
             {/* Hero */}
