@@ -12,55 +12,48 @@ const OP_STYLE: Record<string, { color: string; bg: string }> = {
   ALL:    { color: "#a78bfa", bg: "#a78bfa18" },
 };
 
-function CopyButton({ text }: { text: string }) {
-  const [state, setState] = useState<"idle" | "copied">("idle");
-  const copy = () => {
-    navigator.clipboard.writeText(text);
-    setState("copied");
-    setTimeout(() => setState("idle"), 1800);
-  };
+const KEYWORD_COLOR = "#c084fc";
+const FN_COLOR      = "#34d399";
+const STR_COLOR     = "#fbbf24";
+const PLAIN_COLOR   = "#d4d4d8";
+
+const KEYWORDS = new Set([
+  "CREATE","POLICY","ON","AS","FOR","TO","USING","WITH","CHECK",
+  "PERMISSIVE","RESTRICTIVE","ALTER","TABLE","ENABLE","ROW","LEVEL",
+  "SECURITY","BEGIN","END","SELECT","INSERT","UPDATE","DELETE","ALL",
+  "PUBLIC","AUTHENTICATED",
+]);
+const FN_PATTERNS = ["auth.uid()","auth.jwt()","auth.role()"];
+
+function SqlLine({ line }: { line: string }) {
+  const tokens = line.split(/(\s+|[(),;])/g);
   return (
-    <motion.button
-      onClick={copy}
-      whileTap={{ scale: 0.92 }}
-      className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors"
-      style={{
-        background: state === "copied" ? "#10b98120" : "var(--surface-2)",
-        color: state === "copied" ? "var(--accent)" : "var(--text-3)",
-        cursor: "pointer",
-        border: "1px solid var(--border)",
-      }}
-    >
-      <AnimatePresence mode="wait">
-        {state === "copied" ? (
-          <motion.span key="check" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
-            ✓ Copied
-          </motion.span>
-        ) : (
-          <motion.span key="copy" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            Copy
-          </motion.span>
-        )}
-      </AnimatePresence>
-    </motion.button>
+    <>
+      {tokens.map((t, i) => {
+        if (KEYWORDS.has(t.trim().toUpperCase())) return <span key={i} style={{ color: KEYWORD_COLOR }}>{t}</span>;
+        if (FN_PATTERNS.some((f) => t.includes(f))) return <span key={i} style={{ color: FN_COLOR }}>{t}</span>;
+        if (t.startsWith("'") && t.endsWith("'")) return <span key={i} style={{ color: STR_COLOR }}>{t}</span>;
+        return <span key={i} style={{ color: PLAIN_COLOR }}>{t}</span>;
+      })}
+    </>
   );
 }
 
-function SqlToken({ sql }: { sql: string }) {
+function SqlBlock({ sql }: { sql: string }) {
   const lines = sql.split("\n");
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse" style={{ fontFamily: "var(--font-geist-mono), monospace" }}>
+    <div style={{ overflowX: "auto" }}>
+      <table style={{ borderCollapse: "collapse", fontFamily: "var(--font-geist-mono), ui-monospace, monospace" }}>
         <tbody>
           {lines.map((line, i) => (
-            <tr key={i} className="group">
-              <td
-                className="select-none pr-4 text-right text-[11px] leading-5 w-8 align-top"
-                style={{ color: "var(--text-3)", userSelect: "none" }}
-              >
+            <tr key={i}>
+              <td style={{
+                paddingRight: 16, textAlign: "right", fontSize: 11, lineHeight: "20px",
+                color: "#3f3f46", userSelect: "none", width: 32, verticalAlign: "top",
+              }}>
                 {i + 1}
               </td>
-              <td className="text-xs leading-5 pr-2 whitespace-pre">
+              <td style={{ fontSize: 12, lineHeight: "20px", whiteSpace: "pre", paddingRight: 8 }}>
                 <SqlLine line={line} />
               </td>
             </tr>
@@ -71,60 +64,56 @@ function SqlToken({ sql }: { sql: string }) {
   );
 }
 
-function SqlLine({ line }: { line: string }) {
-  const keywords = ["CREATE", "POLICY", "ON", "AS", "FOR", "TO", "USING", "WITH", "CHECK", "PERMISSIVE", "RESTRICTIVE", "ALTER", "TABLE", "ENABLE", "ROW", "LEVEL", "SECURITY", "BEGIN", "END", "SELECT", "INSERT", "UPDATE", "DELETE", "ALL"];
-  const functions = ["auth.uid()", "auth.jwt()", "auth.role()"];
-
-  let result = line;
-  const parts: { text: string; type: "keyword" | "function" | "string" | "plain" }[] = [];
-
-  const tokenize = (s: string) => {
-    const tokens = s.split(/(\s+|[(),;])/g);
-    return tokens.map((t) => {
-      if (keywords.includes(t.trim().toUpperCase())) return { text: t, type: "keyword" as const };
-      if (functions.some((f) => t.includes(f))) return { text: t, type: "function" as const };
-      if (t.startsWith("'") && t.endsWith("'")) return { text: t, type: "string" as const };
-      return { text: t, type: "plain" as const };
-    });
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
   };
-
-  const COLOR = {
-    keyword: "#c084fc",
-    function: "#34d399",
-    string: "#fbbf24",
-    plain: "#e2e8f0",
-  };
-
   return (
-    <>
-      {tokenize(result).map((p, i) => (
-        <span key={i} style={{ color: COLOR[p.type] }}>{p.text}</span>
-      ))}
-    </>
+    <motion.button
+      onClick={copy}
+      whileTap={{ scale: 0.91 }}
+      style={{
+        display: "flex", alignItems: "center", gap: 5,
+        padding: "4px 10px", borderRadius: 6, border: "1px solid #3f3f46",
+        fontSize: 11, fontWeight: 500, fontFamily: "inherit",
+        background: copied ? "#10b98118" : "#18181b",
+        color: copied ? "#34d399" : "#71717a",
+        cursor: "pointer", transition: "all 0.15s",
+      }}
+    >
+      <AnimatePresence mode="wait">
+        {copied
+          ? <motion.span key="y" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>✓ Copied</motion.span>
+          : <motion.span key="n" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>Copy</motion.span>
+        }
+      </AnimatePresence>
+    </motion.button>
   );
 }
 
 function SkeletonCard({ delay }: { delay: number }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      className="rounded-2xl overflow-hidden"
-      style={{ border: "1px solid var(--border)", background: "var(--surface)" }}
+      style={{ border: "1px solid #27272a", borderRadius: 16, overflow: "hidden", background: "#111113" }}
     >
-      <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: "1px solid var(--border-soft)" }}>
-        <div className="shimmer h-5 w-14 rounded-md" />
-        <div className="shimmer h-4 w-40 rounded-md" />
-        <div className="ml-auto shimmer h-7 w-14 rounded-lg" />
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderBottom: "1px solid #1f1f23" }}>
+        <div className="shimmer" style={{ height: 20, width: 56, borderRadius: 6 }} />
+        <div className="shimmer" style={{ height: 14, width: 160, borderRadius: 4 }} />
+        <div className="shimmer" style={{ height: 26, width: 52, borderRadius: 6, marginLeft: "auto" }} />
       </div>
-      <div className="p-4 space-y-2">
+      <div style={{ padding: "16px", background: "#0a0a0d", display: "flex", flexDirection: "column", gap: 6 }}>
         {[100, 82, 91, 68, 77].map((w, i) => (
-          <div key={i} className="shimmer h-3 rounded" style={{ width: `${w}%`, animationDelay: `${i * 0.08}s` }} />
+          <div key={i} className="shimmer" style={{ height: 12, width: `${w}%`, borderRadius: 4 }} />
         ))}
       </div>
-      <div className="px-4 py-3" style={{ borderTop: "1px solid var(--border-soft)" }}>
-        <div className="shimmer h-3 w-3/4 rounded" />
+      <div style={{ padding: "10px 16px", borderTop: "1px solid #1f1f23" }}>
+        <div className="shimmer" style={{ height: 12, width: "70%", borderRadius: 4 }} />
       </div>
     </motion.div>
   );
@@ -149,11 +138,12 @@ export function PolicyResults({
   const isEmpty = !generating && policies.length === 0;
 
   return (
-    <div className="space-y-4">
-      {/* Header bar */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <span className="text-sm font-semibold" style={{ color: "var(--text-1)" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 14, fontWeight: 600, color: "#fafafa", fontFamily: "inherit" }}>
             Generated policies
           </span>
           <AnimatePresence>
@@ -161,8 +151,11 @@ export function PolicyResults({
               <motion.span
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="text-[11px] font-bold px-2 py-0.5 rounded-full"
-                style={{ background: "#10b98120", color: "var(--accent)" }}
+                style={{
+                  fontSize: 11, fontWeight: 700, fontFamily: "inherit",
+                  padding: "2px 8px", borderRadius: 99,
+                  background: "#10b98120", color: "#10b981",
+                }}
               >
                 {policies.length}
               </motion.span>
@@ -176,42 +169,39 @@ export function PolicyResults({
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 10 }}
-              className="flex items-center gap-2"
+              style={{ display: "flex", alignItems: "center", gap: 8 }}
             >
-              <label
-                className="flex items-center gap-1.5 text-xs cursor-pointer select-none"
-                style={{ color: "var(--text-3)" }}
-              >
-                <input
-                  type="checkbox"
-                  checked={enableRLS}
-                  onChange={(e) => onToggleRLS(e.target.checked)}
-                  className="accent-emerald-500 w-3 h-3"
-                />
+              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#71717a", cursor: "pointer", fontFamily: "inherit", userSelect: "none" }}>
+                <input type="checkbox" checked={enableRLS} onChange={(e) => onToggleRLS(e.target.checked)}
+                  style={{ accentColor: "#10b981", width: 12, height: 12 }} />
                 Enable RLS
               </label>
+
               <button
                 onClick={onCopyAll}
-                className="text-xs px-3 py-1.5 rounded-lg transition-colors"
                 style={{
-                  background: "var(--surface-2)",
-                  border: "1px solid var(--border)",
-                  color: "var(--text-2)",
-                  cursor: "pointer",
+                  fontSize: 12, padding: "6px 12px", borderRadius: 8, cursor: "pointer",
+                  background: "#18181b", border: "1px solid #3f3f46",
+                  color: "#a1a1aa", fontFamily: "inherit", transition: "all 0.15s",
                 }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "#fafafa"; e.currentTarget.style.borderColor = "#52525b"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "#a1a1aa"; e.currentTarget.style.borderColor = "#3f3f46"; }}
               >
                 Copy all
               </button>
+
               <motion.button
                 onClick={onApply}
                 disabled={applying || !connected}
                 whileHover={!applying && connected ? { scale: 1.02 } : {}}
                 whileTap={!applying && connected ? { scale: 0.97 } : {}}
-                className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors"
                 style={{
-                  background: connected && !applying ? "var(--accent)" : "var(--surface-2)",
-                  color: connected && !applying ? "#022c22" : "var(--text-3)",
+                  display: "flex", alignItems: "center", gap: 6,
+                  fontSize: 12, fontWeight: 600, padding: "6px 14px", borderRadius: 8, border: "none",
+                  background: connected && !applying ? "#10b981" : "#27272a",
+                  color: connected && !applying ? "#022c22" : "#52525b",
                   cursor: connected && !applying ? "pointer" : "not-allowed",
+                  fontFamily: "inherit", transition: "all 0.15s",
                 }}
               >
                 {applying ? (
@@ -219,8 +209,7 @@ export function PolicyResults({
                     <motion.span
                       animate={{ rotate: 360 }}
                       transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-                      className="w-3 h-3 border-2 rounded-full inline-block"
-                      style={{ borderColor: "#ffffff40", borderTopColor: "#022c22" }}
+                      style={{ display: "inline-block", width: 12, height: 12, borderRadius: "50%", border: "2px solid #02533a", borderTopColor: "#022c22" }}
                     />
                     Applying…
                   </>
@@ -231,15 +220,14 @@ export function PolicyResults({
         </AnimatePresence>
       </div>
 
-      {/* Applied results */}
+      {/* Apply results */}
       <AnimatePresence>
         {appliedResults.length > 0 && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="rounded-xl overflow-hidden space-y-1 p-3"
-            style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+            style={{ overflow: "hidden", borderRadius: 12, border: "1px solid #27272a", background: "#111113", padding: 10, display: "flex", flexDirection: "column", gap: 4 }}
           >
             {appliedResults.map((r, i) => (
               <motion.div
@@ -247,95 +235,90 @@ export function PolicyResults({
                 initial={{ opacity: 0, x: -6 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="flex items-center gap-2 text-xs px-2 py-1.5 rounded-lg"
                 style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  fontSize: 12, padding: "6px 10px", borderRadius: 8, fontFamily: "inherit",
                   background: r.success ? "#10b98112" : "#f8717112",
                   color: r.success ? "#34d399" : "#f87171",
                 }}
               >
-                <span className="font-bold">{r.success ? "✓" : "✗"}</span>
-                <span className="font-mono">{r.policy}</span>
-                {r.error && <span className="ml-auto text-[10px] truncate max-w-xs">{r.error}</span>}
+                <span style={{ fontWeight: 700 }}>{r.success ? "✓" : "✗"}</span>
+                <span style={{ fontFamily: "var(--font-geist-mono), monospace" }}>{r.policy}</span>
+                {r.error && <span style={{ marginLeft: "auto", fontSize: 11, maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.error}</span>}
               </motion.div>
             ))}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Policy cards */}
+      {/* Cards */}
       <AnimatePresence mode="wait">
         {generating ? (
-          <motion.div key="skeletons" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
+          <motion.div key="sk" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {[0, 1].map((i) => <SkeletonCard key={i} delay={i * 0.1} />)}
           </motion.div>
+
         ) : isEmpty ? (
           <motion.div
             key="empty"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="rounded-2xl flex flex-col items-center justify-center py-20 text-center"
-            style={{ border: "1px dashed var(--border)", background: "var(--surface)" }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{
+              border: "1px dashed #27272a", borderRadius: 16, background: "#111113",
+              display: "flex", flexDirection: "column", alignItems: "center",
+              justifyContent: "center", padding: "80px 0", textAlign: "center",
+            }}
           >
             <motion.div
-              animate={{ y: [0, -4, 0] }}
+              animate={{ y: [0, -5, 0] }}
               transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-              className="text-4xl mb-4 select-none"
+              style={{ fontSize: 36, marginBottom: 14, userSelect: "none" }}
             >
               🔐
             </motion.div>
-            <p className="text-sm font-medium" style={{ color: "var(--text-2)" }}>
+            <p style={{ fontSize: 14, fontWeight: 500, color: "#a1a1aa", fontFamily: "inherit" }}>
               No policies generated yet
             </p>
-            <p className="text-xs mt-1" style={{ color: "var(--text-3)" }}>
+            <p style={{ fontSize: 12, color: "#52525b", marginTop: 6, fontFamily: "inherit" }}>
               Describe a rule above and click Generate
             </p>
           </motion.div>
+
         ) : (
-          <motion.div key="results" className="space-y-3">
+          <motion.div key="results" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {policies.map((policy, i) => {
-              const style = OP_STYLE[policy.operation] ?? OP_STYLE.ALL;
+              const s = OP_STYLE[policy.operation] ?? OP_STYLE.ALL;
               return (
                 <motion.div
                   key={`${policy.name}-${i}`}
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.07, ease: [0.22, 1, 0.36, 1] }}
-                  className="rounded-2xl overflow-hidden"
-                  style={{ border: "1px solid var(--border)", background: "var(--surface)" }}
+                  style={{ border: "1px solid #27272a", borderRadius: 16, overflow: "hidden", background: "#111113" }}
                 >
-                  {/* Card header */}
-                  <div
-                    className="flex items-center gap-3 px-4 py-3"
-                    style={{ borderBottom: "1px solid var(--border-soft)" }}
-                  >
-                    <span
-                      className="text-[10px] font-black font-mono px-2 py-1 rounded-md tracking-wider"
-                      style={{ color: style.color, background: style.bg }}
-                    >
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderBottom: "1px solid #1f1f23" }}>
+                    <span style={{
+                      fontSize: 10, fontWeight: 900, letterSpacing: "0.08em",
+                      fontFamily: "var(--font-geist-mono), monospace",
+                      padding: "3px 8px", borderRadius: 6,
+                      color: s.color, background: s.bg,
+                    }}>
                       {policy.operation}
                     </span>
-                    <span className="text-sm font-medium truncate" style={{ color: "var(--text-1)" }}>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: "#fafafa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, fontFamily: "inherit" }}>
                       {policy.name}
                     </span>
-                    <div className="ml-auto">
-                      <CopyButton text={policy.sql} />
-                    </div>
+                    <CopyButton text={policy.sql} />
                   </div>
 
-                  {/* SQL */}
-                  <div className="px-4 py-4" style={{ background: "#0a0a0d" }}>
-                    <SqlToken sql={policy.sql} />
+                  <div style={{ padding: "16px", background: "#070709" }}>
+                    <SqlBlock sql={policy.sql} />
                   </div>
 
-                  {/* Explanation */}
                   {policy.explanation && (
-                    <div
-                      className="px-4 py-3 flex items-start gap-2"
-                      style={{ borderTop: "1px solid var(--border-soft)" }}
-                    >
-                      <span className="text-xs mt-0.5" style={{ color: "var(--text-3)" }}>ℹ</span>
-                      <p className="text-xs leading-relaxed" style={{ color: "var(--text-3)" }}>
+                    <div style={{ display: "flex", gap: 8, padding: "10px 16px", borderTop: "1px solid #1f1f23", alignItems: "flex-start" }}>
+                      <span style={{ fontSize: 12, color: "#3f3f46", flexShrink: 0, marginTop: 1 }}>ℹ</span>
+                      <p style={{ fontSize: 12, lineHeight: 1.6, color: "#52525b", margin: 0, fontFamily: "inherit" }}>
                         {policy.explanation}
                       </p>
                     </div>
