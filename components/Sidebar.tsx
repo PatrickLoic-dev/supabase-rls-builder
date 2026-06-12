@@ -1,6 +1,18 @@
 "use client";
 
 import { motion, AnimatePresence } from "motion/react";
+import {
+  Link2, Key, Bot, Wifi, WifiOff, Table2,
+  RefreshCw, ChevronRight, ShieldCheck,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Logo } from "@/components/Logo";
+import { useT } from "@/components/providers";
+import { cn } from "@/lib/utils";
 import { RLSPolicy } from "@/lib/supabase-manager";
 
 interface SidebarProps {
@@ -19,49 +31,12 @@ interface SidebarProps {
   onRefresh: () => void;
 }
 
-const INPUT_BASE: React.CSSProperties = {
-  display: "block",
-  width: "100%",
-  background: "#09090b",
-  border: "1px solid #3f3f46",
-  borderRadius: 10,
-  padding: "8px 12px",
-  fontSize: 13,
-  color: "#fafafa",
-  outline: "none",
-  fontFamily: "inherit",
-  transition: "border-color 0.15s",
-};
-
-function Field({
-  label, type, placeholder, value, onChange,
-}: {
-  label: string; type: string; placeholder: string; value: string; onChange: (v: string) => void;
-}) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <label style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "#71717a", fontFamily: "inherit" }}>
-        {label}
-      </label>
-      <input
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        style={INPUT_BASE}
-        onFocus={(e) => { e.target.style.borderColor = "#10b981"; e.target.style.boxShadow = "0 0 0 3px #10b98120"; }}
-        onBlur={(e) => { e.target.style.borderColor = "#3f3f46"; e.target.style.boxShadow = "none"; }}
-      />
-    </div>
-  );
-}
-
-const CMD_COLOR: Record<string, string> = {
-  SELECT: "#60a5fa",
-  INSERT: "#34d399",
-  UPDATE: "#fbbf24",
-  DELETE: "#f87171",
-  ALL: "#a78bfa",
+const CMD_COLORS: Record<string, string> = {
+  SELECT: "text-blue-500 bg-blue-500/10",
+  INSERT: "text-emerald-600 bg-emerald-500/10",
+  UPDATE: "text-amber-600 bg-amber-500/10",
+  DELETE: "text-red-500 bg-red-500/10",
+  ALL:    "text-purple-500 bg-purple-500/10",
 };
 
 export function Sidebar({
@@ -69,40 +44,23 @@ export function Sidebar({
   connected, connecting, tables, policies, selectedTable, policiesLoading,
   onFieldChange, onConnect, onSelectTable, onRefresh,
 }: SidebarProps) {
+  const { t } = useT();
   const canConnect = supabaseUrl && supabaseKey && openaiKey;
 
   return (
-    <aside
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        overflow: "hidden",
-        borderRight: "1px solid #27272a",
-        background: "#111113",
-        fontFamily: "inherit",
-      }}
-    >
+    <aside className="flex flex-col h-full bg-[var(--sidebar-bg)] border-r border-border overflow-hidden">
       {/* Brand */}
-      <div style={{ padding: "18px 20px", borderBottom: "1px solid #1f1f23", display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
-        <div style={{
-          width: 28, height: 28, borderRadius: 8, background: "#10b981",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 10, fontWeight: 900, color: "#022c22", flexShrink: 0, fontFamily: "inherit",
-        }}>
-          RLS
-        </div>
-        <div>
-          <p style={{ fontSize: 13, fontWeight: 600, color: "#fafafa", lineHeight: 1, margin: 0, fontFamily: "inherit" }}>RLS Builder</p>
-          <p style={{ fontSize: 11, color: "#52525b", marginTop: 3, lineHeight: 1, fontFamily: "inherit" }}>Supabase policy generator</p>
-        </div>
+      <div className="px-5 py-4 flex-shrink-0">
+        <Logo showWordmark tagline={t.appTagline} />
       </div>
 
-      {/* Connection section */}
-      <div style={{ padding: "16px 16px", borderBottom: "1px solid #1f1f23", flexShrink: 0, display: "flex", flexDirection: "column", gap: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "#52525b", fontFamily: "inherit" }}>
-            Connection
+      <Separator />
+
+      {/* Connection */}
+      <div className="px-4 py-4 flex-shrink-0 space-y-3">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            {t.connection}
           </span>
           <AnimatePresence>
             {connected && (
@@ -110,126 +68,141 @@ export function Sidebar({
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.5 }}
-                style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6 }}
+                className="ml-auto flex items-center gap-1.5"
               >
-                <motion.span
-                  className="pulse-glow"
-                  style={{ display: "block", width: 6, height: 6, borderRadius: "50%", background: "#10b981" }}
-                />
-                <span style={{ fontSize: 11, color: "#10b981", fontWeight: 600, fontFamily: "inherit" }}>Live</span>
+                <span className="pulse-glow w-1.5 h-1.5 rounded-full bg-primary block" />
+                <span className="text-[11px] font-semibold text-primary">{t.live}</span>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        <Field label="Project URL" type="url" placeholder="https://xxxx.supabase.co"
-          value={supabaseUrl} onChange={(v) => onFieldChange("supabaseUrl", v)} />
-        <Field label="Service Role Key" type="password" placeholder="eyJ..."
-          value={supabaseKey} onChange={(v) => onFieldChange("supabaseKey", v)} />
-        <Field label="OpenAI Key" type="password" placeholder="sk-..."
-          value={openaiKey} onChange={(v) => onFieldChange("openaiKey", v)} />
+        <div className="space-y-2">
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1.5 text-muted-foreground">
+              <Link2 className="w-3 h-3" />{t.projectUrl}
+            </Label>
+            <Input
+              type="url"
+              placeholder="https://xxxx.supabase.co"
+              value={supabaseUrl}
+              onChange={(e) => onFieldChange("supabaseUrl", e.target.value)}
+              className="h-8 text-xs font-mono"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1.5 text-muted-foreground">
+              <Key className="w-3 h-3" />{t.serviceRoleKey}
+            </Label>
+            <Input
+              type="password"
+              placeholder="eyJ…"
+              value={supabaseKey}
+              onChange={(e) => onFieldChange("supabaseKey", e.target.value)}
+              className="h-8 text-xs font-mono"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1.5 text-muted-foreground">
+              <Bot className="w-3 h-3" />{t.openAiKey}
+            </Label>
+            <Input
+              type="password"
+              placeholder="sk-…"
+              value={openaiKey}
+              onChange={(e) => onFieldChange("openaiKey", e.target.value)}
+              className="h-8 text-xs font-mono"
+            />
+          </div>
+        </div>
 
-        <motion.button
-          onClick={onConnect}
-          disabled={!canConnect || connecting}
-          whileHover={canConnect && !connecting ? { scale: 1.01 } : {}}
-          whileTap={canConnect && !connecting ? { scale: 0.98 } : {}}
-          style={{
-            width: "100%",
-            padding: "8px 0",
-            borderRadius: 10,
-            border: "none",
-            fontSize: 13,
-            fontWeight: 600,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            background: canConnect && !connecting ? "#10b981" : "#27272a",
-            color: canConnect && !connecting ? "#022c22" : "#52525b",
-            cursor: canConnect && !connecting ? "pointer" : "not-allowed",
-            fontFamily: "inherit",
-            transition: "background 0.15s, color 0.15s",
-          }}
-        >
-          {connecting ? (
-            <>
+        <motion.div whileTap={canConnect && !connecting ? { scale: 0.98 } : {}}>
+          <Button
+            className="w-full h-8 text-xs gap-2"
+            onClick={onConnect}
+            disabled={!canConnect || connecting}
+            variant={connected ? "outline" : "default"}
+          >
+            {connecting ? (
               <motion.span
                 animate={{ rotate: 360 }}
                 transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-                style={{
-                  display: "inline-block", width: 13, height: 13, borderRadius: "50%",
-                  border: "2px solid #52525b", borderTopColor: "#fafafa",
-                }}
+                className="w-3 h-3 border-2 border-current border-t-transparent rounded-full"
               />
-              Connecting…
-            </>
-          ) : connected ? "Reconnect" : "Connect"}
-        </motion.button>
+            ) : connected ? (
+              <Wifi className="w-3 h-3" />
+            ) : (
+              <WifiOff className="w-3 h-3" />
+            )}
+            {connecting ? t.connecting : connected ? t.reconnect : t.connect}
+          </Button>
+        </motion.div>
       </div>
 
+      <Separator />
+
       {/* Tables */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "#52525b", fontFamily: "inherit" }}>
-            Tables {tables.length > 0 && `(${tables.length})`}
+      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
+        <div className="flex items-center justify-between px-1 mb-2">
+          <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+            <Table2 className="w-3 h-3" />
+            {t.tables}{tables.length > 0 && ` (${tables.length})`}
           </span>
           {connected && (
-            <motion.button
-              whileTap={{ scale: 0.9 }}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-5 h-5"
               onClick={onRefresh}
               disabled={policiesLoading}
-              style={{ fontSize: 11, color: "#52525b", cursor: "pointer", background: "none", border: "none", fontFamily: "inherit" }}
             >
-              {policiesLoading ? "…" : "↺"}
-            </motion.button>
+              <motion.span
+                animate={policiesLoading ? { rotate: 360 } : { rotate: 0 }}
+                transition={{ duration: 0.8, repeat: policiesLoading ? Infinity : 0, ease: "linear" }}
+                className="flex items-center justify-center"
+              >
+                <RefreshCw className="w-3 h-3" />
+              </motion.span>
+            </Button>
           )}
         </div>
 
         {!connected ? (
-          <p style={{ fontSize: 12, color: "#52525b", fontFamily: "inherit" }}>Connect to browse tables</p>
+          <p className="text-xs text-muted-foreground px-1 py-2">{t.connectToBrowse}</p>
         ) : policiesLoading && tables.length === 0 ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {[70, 50, 62, 45].map((w, i) => (
-              <div key={i} className="shimmer" style={{ height: 28, borderRadius: 8, width: `${w}%` }} />
+          <div className="space-y-1.5 px-1">
+            {[80, 55, 70, 45].map((w, i) => (
+              <div key={i} className="shimmer h-7 rounded-md" style={{ width: `${w}%` }} />
             ))}
           </div>
         ) : (
           <AnimatePresence>
-            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {["", ...tables].map((t, i) => {
-                const active = selectedTable === t;
-                return (
-                  <motion.button
-                    key={t || "__all__"}
-                    initial={{ opacity: 0, x: -6 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.025 }}
-                    onClick={() => onSelectTable(t)}
-                    style={{
-                      display: "flex", alignItems: "center", gap: 8,
-                      padding: "6px 10px", borderRadius: 8, fontSize: 12,
-                      textAlign: "left", cursor: "pointer", border: "none",
-                      background: active ? "#10b98115" : "transparent",
-                      color: active ? "#10b981" : "#a1a1aa",
-                      borderLeft: active ? "2px solid #10b981" : "2px solid transparent",
-                      fontFamily: "var(--font-code), monospace",
-                      transition: "all 0.1s",
-                      width: "100%",
-                    }}
-                  >
-                    <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {t || "All tables"}
-                    </span>
-                    {t && (
-                      <span style={{ fontSize: 10, color: "#3f3f46", flexShrink: 0 }}>
-                        {policies.filter((p) => p.table === t).length}
-                      </span>
-                    )}
-                  </motion.button>
-                );
-              })}
-            </div>
+            {["", ...tables].map((t2, i) => {
+              const active = selectedTable === t2;
+              const count = policies.filter((p) => p.table === t2).length;
+              return (
+                <motion.button
+                  key={t2 || "__all__"}
+                  initial={{ opacity: 0, x: -6 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.025 }}
+                  onClick={() => onSelectTable(t2)}
+                  className={cn(
+                    "w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs text-left",
+                    "transition-colors duration-100 cursor-pointer",
+                    active
+                      ? "bg-primary/10 text-primary font-medium border-l-2 border-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted border-l-2 border-transparent",
+                  )}
+                >
+                  <span className="flex-1 truncate font-mono">{t2 || t.allTables}</span>
+                  {t2 && count > 0 && (
+                    <Badge variant="secondary" className="text-[9px] px-1.5 h-4 rounded-sm">{count}</Badge>
+                  )}
+                  {active && <ChevronRight className="w-3 h-3 shrink-0 opacity-60" />}
+                </motion.button>
+              );
+            })}
           </AnimatePresence>
         )}
 
@@ -240,35 +213,25 @@ export function Sidebar({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              style={{ overflow: "hidden", marginTop: 12 }}
+              className="overflow-hidden mt-2"
             >
-              <p style={{ fontSize: 10, letterSpacing: "0.07em", textTransform: "uppercase", color: "#3f3f46", marginBottom: 6, fontFamily: "inherit" }}>
-                Existing policies
+              <Separator className="mb-2" />
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground px-1 mb-1.5 flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3" />{t.existingPolicies}
               </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <div className="space-y-1">
                 {policies.filter((p) => p.table === selectedTable).map((p, i) => (
                   <motion.div
                     key={p.id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: i * 0.04 }}
-                    style={{
-                      display: "flex", alignItems: "center", gap: 6,
-                      padding: "4px 8px", borderRadius: 6,
-                      background: "#18181b",
-                    }}
+                    className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/50"
                   >
-                    <span style={{
-                      fontSize: 9, fontWeight: 900, fontFamily: "var(--font-code), monospace",
-                      padding: "2px 4px", borderRadius: 4,
-                      color: CMD_COLOR[p.command] ?? CMD_COLOR.ALL,
-                      background: `${CMD_COLOR[p.command] ?? CMD_COLOR.ALL}18`,
-                    }}>
+                    <span className={cn("text-[9px] font-black font-mono px-1.5 py-0.5 rounded", CMD_COLORS[p.command] ?? CMD_COLORS.ALL)}>
                       {p.command}
                     </span>
-                    <span style={{ fontSize: 11, color: "#71717a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "inherit" }}>
-                      {p.name}
-                    </span>
+                    <span className="text-[11px] text-muted-foreground truncate">{p.name}</span>
                   </motion.div>
                 ))}
               </div>

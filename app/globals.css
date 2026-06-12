@@ -1,58 +1,138 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --color-background:           var(--background);
+  --color-foreground:           var(--foreground);
+  --color-card:                 var(--card);
+  --color-card-foreground:      var(--card-foreground);
+  --color-popover:              var(--popover);
+  --color-popover-foreground:   var(--popover-foreground);
+  --color-primary:              var(--primary);
+  --color-primary-foreground:   var(--primary-foreground);
+  --color-secondary:            var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted:                var(--muted);
+  --color-muted-foreground:     var(--muted-foreground);
+  --color-accent:               var(--accent);
+  --color-accent-foreground:    var(--accent-foreground);
+  --color-destructive:          var(--destructive);
+  --color-border:               var(--border);
+  --color-input:                var(--input);
+  --color-ring:                 var(--ring);
+  --radius-sm:  calc(var(--radius) - 2px);
+  --radius-md:  var(--radius);
+  --radius-lg:  calc(var(--radius) + 2px);
+  --radius-xl:  calc(var(--radius) + 6px);
+  --radius-2xl: calc(var(--radius) + 10px);
+}
+
+/* ─── Light theme ─────────────────────────────────────────── */
+:root {
+  --radius: 0.5rem;
+
+  --background:           oklch(0.99 0 0);
+  --foreground:           oklch(0.13 0 0);
+  --card:                 oklch(1 0 0);
+  --card-foreground:      oklch(0.13 0 0);
+  --popover:              oklch(1 0 0);
+  --popover-foreground:   oklch(0.13 0 0);
+  --primary:              oklch(0.55 0.17 162);
+  --primary-foreground:   oklch(1 0 0);
+  --secondary:            oklch(0.96 0.005 160);
+  --secondary-foreground: oklch(0.35 0.05 162);
+  --muted:                oklch(0.96 0 0);
+  --muted-foreground:     oklch(0.5 0 0);
+  --accent:               oklch(0.94 0.03 162);
+  --accent-foreground:    oklch(0.35 0.1 162);
+  --destructive:          oklch(0.58 0.22 27);
+  --border:               oklch(0.88 0 0);
+  --input:                oklch(0.88 0 0);
+  --ring:                 oklch(0.55 0.17 162);
+
+  /* Semantic custom tokens */
+  --brand:        oklch(0.55 0.17 162);
+  --brand-dim:    oklch(0.48 0.15 162);
+  --brand-soft:   oklch(0.94 0.04 162);
+  --code-bg:      oklch(0.97 0 0);
+  --sidebar-bg:   oklch(0.975 0.003 160);
+  --keyword:      oklch(0.55 0.2 293);
+  --fn-color:     oklch(0.55 0.17 162);
+  --str-color:    oklch(0.6 0.17 60);
+  --plain-color:  oklch(0.25 0 0);
+}
+
+/* ─── Dark theme ──────────────────────────────────────────── */
+.dark {
+  --background:           oklch(0.09 0 0);
+  --foreground:           oklch(0.97 0 0);
+  --card:                 oklch(0.12 0 0);
+  --card-foreground:      oklch(0.97 0 0);
+  --popover:              oklch(0.14 0 0);
+  --popover-foreground:   oklch(0.97 0 0);
+  --primary:              oklch(0.62 0.17 162);
+  --primary-foreground:   oklch(0.07 0.02 162);
+  --secondary:            oklch(0.18 0.005 162);
+  --secondary-foreground: oklch(0.85 0 0);
+  --muted:                oklch(0.18 0 0);
+  --muted-foreground:     oklch(0.55 0 0);
+  --accent:               oklch(0.18 0.01 162);
+  --accent-foreground:    oklch(0.85 0 0);
+  --destructive:          oklch(0.65 0.2 27);
+  --border:               oklch(0.25 0 0);
+  --input:                oklch(0.22 0 0);
+  --ring:                 oklch(0.62 0.17 162);
+
+  --brand:       oklch(0.62 0.17 162);
+  --brand-dim:   oklch(0.52 0.15 162);
+  --brand-soft:  oklch(0.18 0.04 162);
+  --code-bg:     oklch(0.07 0 0);
+  --sidebar-bg:  oklch(0.10 0 0);
+  --keyword:     oklch(0.72 0.18 293);
+  --fn-color:    oklch(0.72 0.17 162);
+  --str-color:   oklch(0.78 0.16 75);
+  --plain-color: oklch(0.86 0 0);
+}
+
+/* ─── Base ────────────────────────────────────────────────── */
 @layer base {
-  :root {
-    --bg:         #09090b;
-    --surface:    #111113;
-    --surface-2:  #18181b;
-    --border:     #3f3f46;
-    --border-soft:#27272a;
-    --accent:     #10b981;
-    --accent-dim: #059669;
-    --text-1:     #fafafa;
-    --text-2:     #a1a1aa;
-    --text-3:     #71717a;
-    --font-ui:    var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
-    --font-code:  var(--font-geist-mono), ui-monospace, "Cascadia Code", monospace;
-  }
-
-  html, body {
-    background-color: var(--bg) !important;
-    color: var(--text-1) !important;
-    font-family: var(--font-ui) !important;
-    height: 100%;
-  }
-
   * { box-sizing: border-box; }
 
-  ::selection {
-    background: #10b98133;
-    color: #d1fae5;
-  }
+  html { font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif; }
+  body { @apply bg-background text-foreground; }
 
-  input, textarea, select, button {
-    font-family: var(--font-ui) !important;
-  }
+  ::selection { background: oklch(0.55 0.17 162 / 0.2); color: inherit; }
 
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 99px; }
-  ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 }
 
+/* ─── Shimmer skeleton ────────────────────────────────────── */
 @keyframes shimmer {
   0%   { background-position: -200% 0; }
   100% { background-position:  200% 0; }
 }
-
 .shimmer {
-  background: linear-gradient(90deg, #1f1f22 25%, #2d2d31 50%, #1f1f22 75%);
+  background: linear-gradient(
+    90deg,
+    var(--muted) 25%,
+    var(--border) 50%,
+    var(--muted) 75%
+  );
   background-size: 200% 100%;
   animation: shimmer 1.6s ease-in-out infinite;
 }
 
+/* ─── Brand glow pulse ────────────────────────────────────── */
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0   #10b98155; }
-  50%       { box-shadow: 0 0 0 5px #10b98100; }
+  0%, 100% { box-shadow: 0 0 0 0   oklch(0.55 0.17 162 / 0.4); }
+  50%       { box-shadow: 0 0 0 6px oklch(0.55 0.17 162 / 0);   }
 }
 .pulse-glow { animation: pulse-glow 2.2s ease-in-out infinite; }
