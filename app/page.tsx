@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { motion } from "motion/react";
 import { ConnectionPanel } from "@/components/ConnectionPanel";
 import { PolicyEditor } from "@/components/PolicyEditor";
 import { SqlPreview } from "@/components/SqlPreview";
@@ -35,26 +36,32 @@ export default function Home() {
   const [appliedResults, setAppliedResults] = useState<{ policy: string; success: boolean; error?: string }[]>([]);
   const [enableRLS, setEnableRLS] = useState(true);
 
-  const buildSupabaseHeaders = useCallback(() => ({
-    "x-supabase-url": creds.supabaseUrl,
-    "x-supabase-key": creds.supabaseKey,
-  }), [creds.supabaseUrl, creds.supabaseKey]);
+  const buildSupabaseHeaders = useCallback(
+    () => ({
+      "x-supabase-url": creds.supabaseUrl,
+      "x-supabase-key": creds.supabaseKey,
+    }),
+    [creds.supabaseUrl, creds.supabaseKey]
+  );
 
-  const loadPolicies = useCallback(async (table: string) => {
-    setPoliciesLoading(true);
-    try {
-      const params = table ? `?table=${encodeURIComponent(table)}` : "";
-      const res = await fetch(`/api/policies${params}`, { headers: buildSupabaseHeaders() });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      setExistingPolicies(data.policies ?? []);
-      setTables(data.tables ?? []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setPoliciesLoading(false);
-    }
-  }, [buildSupabaseHeaders]);
+  const loadPolicies = useCallback(
+    async (table: string) => {
+      setPoliciesLoading(true);
+      try {
+        const params = table ? `?table=${encodeURIComponent(table)}` : "";
+        const res = await fetch(`/api/policies${params}`, { headers: buildSupabaseHeaders() });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        setExistingPolicies(data.policies ?? []);
+        setTables(data.tables ?? []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setPoliciesLoading(false);
+      }
+    },
+    [buildSupabaseHeaders]
+  );
 
   const handleConnect = async () => {
     await loadPolicies("");
@@ -112,20 +119,46 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
-      <header className="border-b border-gray-800 px-6 py-4">
+      {/* Ambient background glow */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 -right-40 w-80 h-80 bg-blue-500/4 rounded-full blur-3xl" />
+      </div>
+
+      {/* Header */}
+      <motion.header
+        initial={{ opacity: 0, y: -16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="relative border-b border-gray-800/80 px-6 py-4 backdrop-blur-sm bg-gray-950/80 sticky top-0 z-10"
+      >
         <div className="max-w-7xl mx-auto flex items-center gap-3">
-          <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-sm font-bold">
+          <motion.div
+            initial={{ scale: 0.7, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.1, type: "spring", stiffness: 400 }}
+            className="w-8 h-8 bg-emerald-500 rounded-xl flex items-center justify-center text-xs font-black text-white shadow-lg shadow-emerald-500/30"
+          >
             RLS
-          </div>
+          </motion.div>
           <div>
-            <h1 className="text-lg font-bold">Supabase RLS Builder</h1>
-            <p className="text-xs text-gray-500">Generate Row Level Security policies from natural language</p>
+            <h1 className="text-base font-bold text-white">Supabase RLS Builder</h1>
+            <p className="text-[11px] text-gray-500">
+              Generate Row Level Security policies from natural language
+            </p>
+          </div>
+
+          <div className="ml-auto flex items-center gap-2 text-xs text-gray-600">
+            <span className="hidden sm:inline">Powered by</span>
+            <span className="font-semibold text-gray-400">GPT-4o</span>
           </div>
         </div>
-      </header>
+      </motion.header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="space-y-6">
+      {/* Main */}
+      <main className="relative max-w-7xl mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Column 1 — Connection + existing policies */}
+        <div className="space-y-5">
           <ConnectionPanel
             supabaseUrl={creds.supabaseUrl}
             supabaseKey={creds.supabaseKey}
@@ -139,12 +172,16 @@ export default function Home() {
             loading={policiesLoading}
             selectedTable={filterTable}
             tables={tables}
-            onFilterTable={(t) => { setFilterTable(t); loadPolicies(t); }}
+            onFilterTable={(t) => {
+              setFilterTable(t);
+              loadPolicies(t);
+            }}
             onRefresh={() => loadPolicies(filterTable)}
           />
         </div>
 
-        <div className="space-y-6">
+        {/* Column 2 — Editor */}
+        <div className="space-y-5">
           <PolicyEditor
             description={description}
             tableName={tableName}
@@ -158,9 +195,11 @@ export default function Home() {
           />
         </div>
 
-        <div className="space-y-6">
+        {/* Column 3 — Preview */}
+        <div className="space-y-5">
           <SqlPreview
             policies={generatedPolicies}
+            generating={generating}
             applying={applying}
             appliedResults={appliedResults}
             enableRLS={enableRLS}

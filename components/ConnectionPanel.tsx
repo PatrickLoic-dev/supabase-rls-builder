@@ -1,5 +1,7 @@
 "use client";
 
+import { motion, AnimatePresence } from "motion/react";
+
 interface ConnectionPanelProps {
   supabaseUrl: string;
   supabaseKey: string;
@@ -7,6 +9,36 @@ interface ConnectionPanelProps {
   connected: boolean;
   onChange: (field: "supabaseUrl" | "supabaseKey" | "openaiKey", value: string) => void;
   onConnect: () => void;
+}
+
+const inputClass =
+  "w-full bg-gray-800/60 border border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500/70 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-200";
+
+function Field({
+  label,
+  type,
+  placeholder,
+  value,
+  onChange,
+}: {
+  label: string;
+  type: string;
+  placeholder: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className="block text-xs font-medium text-gray-400">{label}</label>
+      <input
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={inputClass}
+      />
+    </div>
+  );
 }
 
 export function ConnectionPanel({
@@ -17,57 +49,75 @@ export function ConnectionPanel({
   onChange,
   onConnect,
 }: ConnectionPanelProps) {
+  const canConnect = supabaseUrl && supabaseKey && openaiKey;
+
   return (
-    <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 space-y-4">
-      <div className="flex items-center gap-2 mb-2">
-        <div className={`w-2 h-2 rounded-full ${connected ? "bg-green-400" : "bg-gray-500"}`} />
-        <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="bg-gray-900/80 backdrop-blur border border-gray-800 rounded-2xl p-5 space-y-4 shadow-xl"
+    >
+      <div className="flex items-center gap-2.5">
+        <motion.div
+          animate={{
+            backgroundColor: connected ? "#34d399" : "#6b7280",
+            boxShadow: connected ? "0 0 8px #34d39966" : "none",
+          }}
+          transition={{ duration: 0.4 }}
+          className="w-2 h-2 rounded-full"
+        />
+        <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
           Connection
-        </h2>
+        </span>
+        <AnimatePresence>
+          {connected && (
+            <motion.span
+              initial={{ opacity: 0, x: -6 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -6 }}
+              className="ml-auto text-xs text-emerald-400 font-medium"
+            >
+              Connected
+            </motion.span>
+          )}
+        </AnimatePresence>
       </div>
 
       <div className="space-y-3">
-        <div>
-          <label className="block text-xs text-gray-400 mb-1">Supabase Project URL</label>
-          <input
-            type="url"
-            placeholder="https://xxxx.supabase.co"
-            value={supabaseUrl}
-            onChange={(e) => onChange("supabaseUrl", e.target.value)}
-            className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs text-gray-400 mb-1">Service Role Key</label>
-          <input
-            type="password"
-            placeholder="eyJhbGciOiJIUzI1NiIs..."
-            value={supabaseKey}
-            onChange={(e) => onChange("supabaseKey", e.target.value)}
-            className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs text-gray-400 mb-1">OpenAI API Key</label>
-          <input
-            type="password"
-            placeholder="sk-..."
-            value={openaiKey}
-            onChange={(e) => onChange("openaiKey", e.target.value)}
-            className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
-          />
-        </div>
-
-        <button
-          onClick={onConnect}
-          disabled={!supabaseUrl || !supabaseKey || !openaiKey}
-          className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-700 disabled:text-gray-500 text-white font-medium py-2 rounded-lg text-sm transition-colors"
-        >
-          {connected ? "Reconnect" : "Connect"}
-        </button>
+        <Field
+          label="Supabase Project URL"
+          type="url"
+          placeholder="https://xxxx.supabase.co"
+          value={supabaseUrl}
+          onChange={(v) => onChange("supabaseUrl", v)}
+        />
+        <Field
+          label="Service Role Key"
+          type="password"
+          placeholder="eyJhbGciOiJIUzI1NiIs..."
+          value={supabaseKey}
+          onChange={(v) => onChange("supabaseKey", v)}
+        />
+        <Field
+          label="OpenAI API Key"
+          type="password"
+          placeholder="sk-..."
+          value={openaiKey}
+          onChange={(v) => onChange("openaiKey", v)}
+        />
       </div>
-    </div>
+
+      <motion.button
+        onClick={onConnect}
+        disabled={!canConnect}
+        whileHover={canConnect ? { scale: 1.02 } : {}}
+        whileTap={canConnect ? { scale: 0.97 } : {}}
+        transition={{ type: "spring", stiffness: 400, damping: 20 }}
+        className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-800 disabled:text-gray-600 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors cursor-pointer disabled:cursor-not-allowed"
+      >
+        {connected ? "Reconnect" : "Connect"}
+      </motion.button>
+    </motion.div>
   );
 }
