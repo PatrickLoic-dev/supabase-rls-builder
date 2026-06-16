@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
@@ -11,7 +12,11 @@ import { cn } from "@/lib/utils";
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
   const { t } = useT();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const isDark = resolvedTheme === "dark";
+
+  if (!mounted) return <div className="w-8 h-8" />;
 
   return (
     <Button
@@ -69,13 +74,12 @@ export function LanguageSwitcher() {
             onClick={() => setLocale(l)}
             whileTap={{ scale: 0.93 }}
             className={cn(
-              "flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-semibold transition-all duration-150 cursor-pointer",
+              "flex items-center px-2 py-1 rounded-md text-[11px] font-semibold transition-all duration-150 cursor-pointer",
               active
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
-            <span className="text-sm leading-none">{flag}</span>
             <span>{label}</span>
           </motion.button>
         );

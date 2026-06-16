@@ -76,7 +76,7 @@
   --plain-color:          oklch(0.18 0.01 240);
 
   /* Grid overlay */
-  --grid-color:           oklch(0 0 0 / 0.07);
+  --grid-line:            rgba(0, 0, 0, 0.08);
 }
 
 /* ─── Dark theme — deep navy blue ────────────────────────── */
@@ -118,7 +118,7 @@
   --str-color:            oklch(0.76 0.15 75);
   --plain-color:          oklch(0.87 0.01 225);
 
-  --grid-color:           oklch(1 0 0 / 0.06);
+  --grid-line:            rgba(255, 255, 255, 0.07);
 }
 
 /* ─── Base styles ─────────────────────────────────────────── */
@@ -149,42 +149,15 @@
   }
 }
 
-/* ─── Dashed grid background ──────────────────────────────── */
+/* ─── Grid background ─────────────────────────────────────── */
 .grid-bg {
   background-color: var(--background);
   background-image:
-    /* Horizontal dashed lines */
-    repeating-linear-gradient(
-      0deg,
-      transparent 0px,
-      transparent 39px,
-      var(--grid-color) 39px,
-      var(--grid-color) 40px
-    ),
-    /* Vertical dashed lines */
-    repeating-linear-gradient(
-      90deg,
-      transparent 0px,
-      transparent 39px,
-      var(--grid-color) 39px,
-      var(--grid-color) 40px
-    );
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
-/* Dashed effect via mask — dots at intersections */
-.grid-bg::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: radial-gradient(
-    circle at center,
-    var(--background) 0%,
-    transparent 70%
-  );
-  z-index: 0;
-}
 
 /* ─── Shimmer skeleton ────────────────────────────────────── */
 @keyframes shimmer {

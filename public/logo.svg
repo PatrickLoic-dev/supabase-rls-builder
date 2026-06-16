@@ -1,0 +1,12 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shield fill -->
+  <path d="M24 4L7 11V24C7 33.9 14.5 43 24 45C33.5 43 41 33.9 41 24V11L24 4Z" fill="#10b981" fill-opacity="0.15"/>
+  <!-- Shield stroke -->
+  <path d="M24 4L7 11V24C7 33.9 14.5 43 24 45C33.5 43 41 33.9 41 24V11L24 4Z" stroke="#10b981" stroke-width="2.2" stroke-linejoin="round"/>
+  <!-- DB cylinder top -->
+  <ellipse cx="24" cy="18.5" rx="7" ry="2.5" fill="#10b981"/>
+  <!-- DB cylinder body -->
+  <path d="M17 18.5V27C17 28.4 20.1 29.5 24 29.5C27.9 29.5 31 28.4 31 27V18.5" fill="#10b981" fill-opacity="0.15" stroke="#10b981" stroke-width="2"/>
+  <!-- DB mid line -->
+  <path d="M17 22.5C17 23.9 20.1 25 24 25C27.9 25 31 23.9 31 22.5" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" opacity="0.55"/>
+</svg>

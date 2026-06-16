@@ -45,6 +45,22 @@ export default function Home() {
     setTimeout(() => setToasts((p) => p.filter((t) => t.id !== id)), 3500);
   };
 
+  // Seed credentials from env variables on first load
+  useEffect(() => {
+    fetch("/api/config")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.supabaseUrl || data.supabaseKey || data.openaiKey) {
+          setCreds((prev) => ({
+            supabaseUrl: data.supabaseUrl || prev.supabaseUrl,
+            supabaseKey: data.supabaseKey || prev.supabaseKey,
+            openaiKey:   data.openaiKey   || prev.openaiKey,
+          }));
+        }
+      })
+      .catch(() => {/* env vars not set — user fills manually */});
+  }, []);
+
   // Ref so loadPolicies always reads the latest creds without stale closure
   const credsRef = useRef(creds);
   useEffect(() => { credsRef.current = creds; }, [creds]);
@@ -199,7 +215,7 @@ export default function Home() {
         </header>
 
         {/* Scrollable workspace with grid background */}
-        <main className="flex-1 overflow-y-auto grid-bg relative">
+        <main className="flex-1 overflow-y-auto grid-bg">
           <div className="max-w-3xl mx-auto px-6 py-14 space-y-12">
 
             {/* Hero */}

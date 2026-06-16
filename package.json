@@ -1,19 +1,25 @@
 {
-  "name": "supabase-rls-builder",
-  "version": "0.1.0",
+  "name": "policycraft",
+  "version": "1.0.0",
+  "description": "Generate Supabase RLS policies from plain English — installable dev tool",
+  "keywords": ["supabase", "rls", "row-level-security", "openai", "devtool"],
+  "license": "MIT",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build && tsc --project tsconfig.cli.json",
+    "dev": "next dev --turbopack",
+    "build": "next build",
     "start": "next start",
-    "cli": "ts-node --esm bin/cli.ts",
-    "lint": "eslint"
+    "lint": "eslint",
+    "pack:prepare": "next build && node bin/copy-static.js"
   },
   "bin": {
-    "supabase-rls-builder": "./dist/bin/cli.js"
+    "policycraft": "./bin/cli.js"
   },
-  "exports": {
-    ".": "./dist/lib/index.js"
-  },
+  "files": [
+    "bin/",
+    ".next/standalone/",
+    ".next/static/",
+    "public/"
+  ],
   "dependencies": {
     "@base-ui/react": "^1.5.0",
     "@supabase/supabase-js": "^2.108.1",

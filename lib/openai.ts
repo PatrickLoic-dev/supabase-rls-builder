@@ -9,23 +9,24 @@ Rules:
 - Use auth.jwt() for JWT claims
 - Use auth.role() for the user's role
 - Generate separate policies for SELECT, INSERT, UPDATE, DELETE when needed
-- Always include the table name placeholder as {TABLE_NAME} if not specified
 - Format SQL cleanly and readably
 - Add a brief comment explaining each policy
 
-Output format (JSON array):
-[
-  {
-    "name": "policy_name",
-    "operation": "SELECT | INSERT | UPDATE | DELETE | ALL",
-    "definition": "USING (...) expression",
-    "check": "WITH CHECK (...) expression or null",
-    "sql": "full CREATE POLICY statement",
-    "explanation": "brief explanation"
-  }
-]
+Output format — return a JSON object with a "policies" key containing an array:
+{
+  "policies": [
+    {
+      "name": "policy_name",
+      "operation": "SELECT | INSERT | UPDATE | DELETE | ALL",
+      "definition": "USING (...) expression",
+      "check": "WITH CHECK (...) expression or null",
+      "sql": "full CREATE POLICY statement",
+      "explanation": "brief explanation"
+    }
+  ]
+}
 
-Only output the JSON array, no markdown, no extra text.`;
+Only output the JSON object described above, no markdown, no extra text.`;
 
 export interface GeneratedPolicy {
   name: string;
@@ -62,9 +63,16 @@ Generate the appropriate RLS policies for this table and rule.`;
 
   try {
     const parsed = JSON.parse(content);
-    const policies: GeneratedPolicy[] = Array.isArray(parsed)
-      ? parsed
-      : parsed.policies ?? [];
+    let policies: GeneratedPolicy[];
+    if (Array.isArray(parsed)) {
+      policies = parsed;
+    } else if (Array.isArray(parsed.policies)) {
+      policies = parsed.policies;
+    } else {
+      // GPT used a different wrapper key — find the first array value
+      const arrayVal = Object.values(parsed).find(Array.isArray) as GeneratedPolicy[] | undefined;
+      policies = arrayVal ?? [];
+    }
     return policies.map((p) => ({
       ...p,
       sql: p.sql.replace(/\{TABLE_NAME\}/g, tableName),
