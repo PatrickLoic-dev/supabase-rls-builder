@@ -1,8 +1,14 @@
 {
   "name": "policycraft",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Generate Supabase RLS policies from plain English — installable dev tool",
-  "keywords": ["supabase", "rls", "row-level-security", "openai", "devtool"],
+  "keywords": [
+    "supabase",
+    "rls",
+    "row-level-security",
+    "openai",
+    "devtool"
+  ],
   "license": "MIT",
   "scripts": {
     "dev": "next dev --turbopack",
