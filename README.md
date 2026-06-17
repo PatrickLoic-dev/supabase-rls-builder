@@ -1,10 +1,10 @@
 <div align="center">
-  <img src="./public/banner.svg" alt="PolicyCraft banner" width="100%"/>
+  <img src="https://raw.githubusercontent.com/PatrickLoic-dev/supabase-rls-builder/main/public/banner.svg" alt="PolicyCraft banner" width="100%"/>
   <br/>
   <br/>
 
   [![npm version](https://img.shields.io/npm/v/policycraft?color=10b981&label=policycraft&style=flat-square)](https://www.npmjs.com/package/policycraft)
-  [![License: MIT](https://img.shields.io/badge/license-MIT-10b981?style=flat-square)](./LICENSE)
+  [![License: MIT](https://img.shields.io/badge/license-MIT-10b981?style=flat-square)](https://github.com/PatrickLoic-dev/supabase-rls-builder/blob/main/LICENSE)
   [![Powered by GPT-4o](https://img.shields.io/badge/AI-GPT--4o-10b981?style=flat-square&logo=openai&logoColor=white)](https://openai.com)
   [![Built for Supabase](https://img.shields.io/badge/built%20for-Supabase-10b981?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com)
 
@@ -31,11 +31,11 @@ PolicyCraft is a local dev tool that converts natural language into Supabase [Ro
 <table>
   <tr>
     <td align="center">
-      <img src="./docs/screenshot-1.png" alt="PolicyCraft — empty state" width="100%"/>
+      <img src="https://raw.githubusercontent.com/PatrickLoic-dev/supabase-rls-builder/main/docs/screenshot-1.png" alt="PolicyCraft — empty state" width="100%"/>
       <sub>Connect your project and browse your tables</sub>
     </td>
     <td align="center">
-      <img src="./docs/screenshot-2.png" alt="PolicyCraft — generated policies" width="100%"/>
+      <img src="https://raw.githubusercontent.com/PatrickLoic-dev/supabase-rls-builder/main/docs/screenshot-2.png" alt="PolicyCraft — generated policies" width="100%"/>
       <sub>Describe a rule, get production-ready SQL</sub>
     </td>
   </tr>
